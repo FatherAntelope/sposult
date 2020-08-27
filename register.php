@@ -24,6 +24,7 @@ if(false) {
 
     } else {
         setcookie("errorRegistration", true, time() + 6);
+        die();
     }
 }
 

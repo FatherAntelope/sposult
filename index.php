@@ -11,7 +11,7 @@
     <script src="/path/semantic.min.js"></script>
 
     <link rel="shortcut icon" href="logo.png" type="image/png">
-    <title>Document</title>
+    <title>Главная</title>
 </head>
 <body style="background-image: url('/background.png');">
 <br>
@@ -44,7 +44,7 @@
                     <input type="password" placeholder="Ваш пароль" name="UserPassword" required>
                 </div>
             </div>
-            <div class="field inline">
+            <div class="field inline" style="margin-top: 5px">
                 <div class="ui slider checkbox">
                     <input type="radio" name="whoAuthorization" value="0" checked="checked">
                     <label>Я студент</label>
@@ -170,10 +170,9 @@
             <i class="lock icon"></i>
             <div class="content">
                 Успешная регистрация!
-                <div class="sub header">Вы успешно зарегистрировались и теперь можете войти в свой аккаунт</div>
+                <div class="sub header" style="color: #d9d9d9">Вы успешно зарегистрировались и теперь можете войти в свой личный кабинет</div>
             </div>
-            <br>
-            <button class="ui button blue" data-tab="1" onclick="hideShow()">Авторизация</button>
+            <button class="ui button blue" onclick="location.reload()" style="margin-top: 5px">Авторизация</button>
         </h2>
     </div>
 </div>
@@ -186,15 +185,19 @@
         $(location).attr('href', '/');
     }
 
-    function delete_cookie (cookie_name)
-    {
+    function delete_cookie (cookie_name) {
         document.cookie = cookie_name += '=; Max-Age=0; path=/; domain=' + location.host;
+    }
+
+    function getCookie(name) {
+        let matches = document.cookie.match(new RegExp(
+            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+        ));
+        return matches ? decodeURIComponent(matches[1]) : undefined;
     }
 </script>
 
 <script>
-
-
     $('.message .close')
         .on('click', function() {
             $(this)
@@ -210,21 +213,21 @@
     $('.ui.dropdown')
         .dropdown()
     ;
-    function hideShow(){
-        $('#loadShow').dimmer('hide');
-    }
 
 
 
     $(document).ready(function () {
         $("#registerUser").submit(function () {
             $.ajax({
-                type: 'POST',
                 url: "/register.php",
-                data: $(this).serialize()
-            }).done(function() {
-                //$('#loadShow').dimmer('show');
-                location.reload();
+                method: "POST",
+                data: $(this).serialize(),
+                success: function () {
+                    $('#loadShow').dimmer('show');
+                },
+                error: function () {
+                    location.reload();
+                }
             });
             return false;
         });
@@ -235,7 +238,13 @@
                 url: "/login.php",
                 data: $(this).serialize()
             }).done(function() {
-                location.reload();
+                if (getCookie('userRole') == 'student') {
+                    $(location).attr('href', '/student/lk.php');
+                } else if(getCookie('userRole') == 'professor') {
+                    $(location).attr('href', '/professor/lk.php');
+                } else {
+                    location.reload();
+                }
             });
             return false;
         });
