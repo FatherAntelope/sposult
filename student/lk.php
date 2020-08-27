@@ -23,7 +23,7 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
 <body style="background-image: url('/background.png');">
 <br>
 <? if(isset($_COOKIE['userLogin']) && isset($_COOKIE['userRole']) && $_COOKIE['userRole'] == 'student') {
-
+    print_r($_COOKIE);
 
     $resultsDataStudents = R::find('students', 'user_name = :userLogin ORDER BY date_training DESC', array(
         ':userLogin' => $_COOKIE['userLogin'],
@@ -102,8 +102,8 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
                 <i class="close icon"></i>
                 <div class="header">Данные отсутствуют</div>
                 <ul>
-                    <li><p>Проверьте корректность авторизации</p></li>
-                    <li><p>Заполните данные</p></li>
+                    <li><p>Добавьте данные занятия</p></li>
+                    <li><p>Если вы не можете добавить данные, то вы пропустили занятие или вы неверно зарегистрировались</p></li>
                 </ul>
             </div>
         <? } ?>
@@ -377,9 +377,8 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
     }
 
     function callDeleteCookies() {
-        delete_cookie("userName");
-        delete_cookie("userSurname");
-        delete_cookie("userGroup");
+        delete_cookie("userLogin");
+        delete_cookie("userRole");
         $(location).attr('href', '/');
     }
 
