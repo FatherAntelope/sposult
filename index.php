@@ -17,7 +17,6 @@
 <br>
 <div class="container ui">
     <?
-    print_r($_COOKIE);
     $tabNumber = null;
     if(isset($_COOKIE['errorLogin']))
         $tabNumber = 0;
@@ -31,7 +30,7 @@
         <div class="ui button orange <? if($tabNumber == 1) echo "active"; ?>" data-tab="2" >Регистрация</div>
     </div>
 
-    <? if(!isset($_COOKIE['userLogin'])) { ?>
+    <? if(!isset($_COOKIE['userData'])) { ?>
         <form class="ui attached tab segment form <? if($tabNumber == 0 || $tabNumber == 2) echo "active"; ?>" data-tab="1" id="loginUser">
 
             <h4 class="ui dividing header">Данные авторизации</h4>
@@ -201,7 +200,7 @@
     }
 
     function callDeleteCookies() {
-        delete_cookie("userLogin");
+        delete_cookie("userData");
         delete_cookie("userRole");
         $(location).attr('href', '/');
     }

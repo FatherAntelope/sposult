@@ -22,15 +22,16 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
 </head>
 <body style="background-image: url('/background.png');">
 <br>
-<? if(isset($_COOKIE['userLogin']) && isset($_COOKIE['userRole']) && $_COOKIE['userRole'] == 'student') {
-    print_r($_COOKIE);
+<? if(isset($_COOKIE['userData']) && $_COOKIE['userRole'] == 'student') {
 
-    $resultsDataStudents = R::find('students', 'user_name = :userLogin ORDER BY date_training DESC', array(
-        ':userLogin' => $_COOKIE['userLogin'],
+    $dataUser = json_decode($_COOKIE['userData'], true);
+
+    $resultsDataStudent = R::find('students', 'user_name = :userLogin ORDER BY date_training DESC', array(
+        ':userLogin' => $dataUser['user_login'],
     ));
 
 
-    $countResultsData = count($resultsDataStudents);
+    $countResultsData = count($resultsDataStudent);
 
     if($countResultsData != 0)
     {
@@ -42,7 +43,7 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
         $sumPulseSecond = 0;
         $sumPulseThird = 0;
 
-        foreach ( $resultsDataStudents AS $result ) {
+        foreach ( $resultsDataStudent AS $result ) {
             $headerHorizonDistance[] = date("d.m.Y", strtotime($result['date_training']));
             $hearerVerticalDistance[] = (Integer)($result['distance']);
             $sumDistance += (Integer)($result['distance']);
@@ -59,7 +60,7 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
 
 
 
-        foreach ( $resultsDataStudents AS $result ) {
+        foreach ( $resultsDataStudent AS $result ) {
             $headerHorizonPulse[] = date("d.m.Y", strtotime($result['date_training']));
             $hearerVerticalOnePulse[] = (Integer)($result['pulse_first']);
             $hearerVerticalTwoPulse[] = (Integer)($result['pulse_second']);
@@ -95,15 +96,15 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
             </a>
         </div>
         <div class="ui header center aligned">
-            <div class="ui big label blue"><? echo $_COOKIE['userName'].' '.$_COOKIE['userSurname'].' ('.$_COOKIE['userGroup'].')'; ?> </div>
+            <div class="ui big label blue"><? echo $dataUser['user_name'].' '.$dataUser['user_surname'].' ('.$dataUser['user_group'].')'; ?> </div>
         </div>
         <? if ($countResultsData == 0) {?>
             <div class="ui negative message">
                 <i class="close icon"></i>
                 <div class="header">Данные отсутствуют</div>
                 <ul>
-                    <li><p>Добавьте данные занятия</p></li>
-                    <li><p>Если вы не можете добавить данные, то вы пропустили занятие или вы неверно зарегистрировались</p></li>
+                    <li><p>Проверьте корректность авторизации</p></li>
+                    <li><p>Заполните данные</p></li>
                 </ul>
             </div>
         <? } ?>
@@ -125,7 +126,7 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
             </tr>
             </thead>
             <tbody class="center aligned">
-            <? foreach ( $resultsDataStudents AS $result ) {
+            <? foreach ( $resultsDataStudent AS $result ) {
                 echo "<tr>";
                 //Дата
                 echo "<td>" . date("d.m.Y", strtotime($result['date_training'])) . "</td>";
@@ -357,6 +358,19 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
 
 
 <script>
+    function callDeleteCookies() {
+        delete_cookie("userRole");
+        delete_cookie("userLogin");
+        $(location).attr('href', '/');
+    }
+
+    function delete_cookie(cookie_name)
+    {
+        var cookie_date = new Date();  // Текущая дата и время
+        cookie_date.setTime (cookie_date.getTime() - 1);
+        document.cookie = cookie_name += "=; expires=" + cookie_date.toGMTString();
+    }
+
     $('.message .close')
         .on('click', function() {
             $(this)
@@ -376,18 +390,7 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
         $('.ui.modal').modal('show');
     }
 
-    function callDeleteCookies() {
-        delete_cookie("userLogin");
-        delete_cookie("userRole");
-        $(location).attr('href', '/');
-    }
 
-    function delete_cookie (cookie_name)
-    {
-        var cookie_date = new Date ( );  // Текущая дата и время
-        cookie_date.setTime ( cookie_date.getTime() - 1 );
-        document.cookie = cookie_name += "=; expires=" + cookie_date.toGMTString();
-    }
 
     $(document).ready(function () {
         $("#resultForm").submit(function () {

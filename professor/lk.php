@@ -21,7 +21,11 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
 </head>
 <body style="background-image: url('/background.png');">
 <br>
-<? if(isset($_COOKIE['professorLogin'])) {
+<? if(isset($_COOKIE['userData']) && $_COOKIE['userRole'] == 'professor') {
+    $userData = json_decode($_COOKIE['userData'], true);
+
+    print_r($userData);
+
     $resultsAllDataStudents = R::findAll('students');
     $countResultsAllDataStudents = count($resultsAllDataStudents);
     $countUncheckedDataStudents = R::count('students', 'checked = ?', [false]);
@@ -42,7 +46,7 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
             </a>
         </div>
         <div class="ui header center aligned">
-            <div class="ui big label blue"><? echo $_COOKIE['professorName'].' '.$_COOKIE['professorMiddlename']; ?> </div>
+            <div class="ui big label blue"><? echo $userData['professor_name'].' '.$userData['professor_middlename']; ?> </div>
         </div>
 
         <h3 class="ui top attached header center aligned orange inverted">
@@ -201,7 +205,18 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
         })
     ;
 
+    function callDeleteCookies() {
+        delete_cookie("userRole");
+        delete_cookie("userData");
+        $(location).attr('href', '/');
+    }
 
+    function delete_cookie (cookie_name)
+    {
+        var cookie_date = new Date();  // Текущая дата и время
+        cookie_date.setTime (cookie_date.getTime() - 1);
+        document.cookie = cookie_name += "=; expires=" + cookie_date.toGMTString();
+    }
 
     $(document).ready(function () {
 

@@ -9,7 +9,7 @@ require $_SERVER['DOCUMENT_ROOT'] . "/db/db.php";
         if($user)
         {
             if(password_verify($_POST['UserPassword'], $user->userPassword)) {
-                setcookie("userLogin", $_POST['UserLogin'], time()+(60*60*24*30));
+                setcookie("userData", $user, time()+(60*60*24*30));
                 setcookie("userRole", 'student', time()+(60*60*24*30));
             }
             else
@@ -22,7 +22,7 @@ require $_SERVER['DOCUMENT_ROOT'] . "/db/db.php";
         $user = R::findOne('professors', 'professor_login = ?', array($_POST['UserLogin']));
         if($user) {
             if(password_verify($_POST['UserPassword'], $user->professorPassword)) {
-                setcookie("userLogin", $_POST['UserLogin'], time()+(60*60*24*30));
+                setcookie("userData", $user, time()+(60*60*24*30));
                 setcookie("userRole", 'professor', time()+(60*60*24*30));
             }
             else
