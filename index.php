@@ -79,7 +79,7 @@
                 </div>
                 <div class="field">
                     <div class="ui buttons">
-                        <a href="<? if($_SESSION['userRole'] == '')?>" class ="ui basic button blue">В личный кабинет</a>
+                        <a href="<? if($_COOKIE['userRole'] == 'student') echo "/student/lk.php"; elseif($_COOKIE['userRole'] == 'professor') echo "/professor/lk.php"; ?>" class ="ui basic button blue">В личный кабинет</a>
                         <button class="ui basic button red" onclick="callDeleteCookies()">Выйти</button>
                     </div>
                 </div>
