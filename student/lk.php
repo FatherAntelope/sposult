@@ -227,33 +227,29 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
             </a>
         </div>
         <h3 class="ui top attached header center aligned red inverted">Необходимо авторизоваться!</h3>
-        <form class="ui attached active tab segment form" id="resultCookie">
+        <form class="ui attached active tab segment form" id="loginUser">
             <h4 class="ui dividing header">Личные данные</h4>
             <div class=" fields">
                 <div class="eight wide field">
-                    <label>Имя</label>
-                    <input type="text" placeholder="Ваше имя" name="CookieName" required>
+                    <label>Логин</label>
+                    <input type="text" placeholder="Ваше имя" name="UserLogin" required>
                 </div>
-                <div class="seven wide field">
-                    <label>Фамилия</label>
-                    <input type="text" placeholder="Ваша фамилия" name="CookieSurname" required>
-                </div>
-                <div class="three wide field">
-                    <label>Группа</label>
-                    <div class="ui selection dropdown labeled icon button fluid" style="background: #2185d0">
-                        <input type="hidden" name="CookieGroup" required>
-                        <i class="users icon" style="color: white"></i>
-                        <span class="text" style="color: white">Выбор</span>
-                        <div class="menu">
-                            <div class="item" data-value="ПРО-318">ПРО-318</div>
-                            <div class="item" data-value="ПРО-317">ПРО-317</div>
-                            <div class="item" data-value="ПРО-316">ПРО-316</div>
-                            <div class="item" data-value="ИБ">ИБ</div>
-                        </div>
-                    </div>
+                <div class="eight wide field">
+                    <label>Пароль</label>
+                    <input type="password" placeholder="Ваша фамилия" name="UserPassword" required>
                 </div>
             </div>
-            <br>
+            <input type="hidden" name="whoAuthorization" value="0">
+            <? if(isset($_COOKIE['errorAuth'])) {?>
+                <div class="ui negative message">
+                    <i class="close icon"></i>
+                    <div class="header">Ошибка авторизации</div>
+                    <ul>
+                        <li><p>Логин или пароль неверны</p></li>
+                        <li><p>Повторите авторизацию</p></li>
+                    </ul>
+                </div>
+            <? } ?>
             <button type="submit" class="fluid ui blue basic button">Войти</button>
         </form>
     </div>
@@ -292,6 +288,19 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
 </div>
 
 </body>
+
+<script>
+    function callDeleteCookies() {
+        delete_cookie("userData");
+        delete_cookie("userRole");
+        $(location).attr('href', '/');
+    }
+
+    function delete_cookie (cookie_name)
+    {
+        document.cookie = cookie_name += '=; Max-Age=0; path=/; domain=' + location.host;
+    }
+</script>
 
 <script type="text/javascript">
     google.charts.load('current', {'packages':['line']});
@@ -358,19 +367,6 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
 
 
 <script>
-    function callDeleteCookies() {
-        delete_cookie("userRole");
-        delete_cookie("userLogin");
-        $(location).attr('href', '/');
-    }
-
-    function delete_cookie(cookie_name)
-    {
-        var cookie_date = new Date();  // Текущая дата и время
-        cookie_date.setTime (cookie_date.getTime() - 1);
-        document.cookie = cookie_name += "=; expires=" + cookie_date.toGMTString();
-    }
-
     $('.message .close')
         .on('click', function() {
             $(this)
@@ -391,7 +387,6 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
     }
 
 
-
     $(document).ready(function () {
         $("#resultForm").submit(function () {
             $.ajax({
@@ -405,13 +400,13 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
         });
 
 
-        $("#resultCookie").submit(function () {
+        $("#loginUser").submit(function () {
             $.ajax({
                 type: 'POST',
                 url: "/login.php",
                 data: $(this).serialize()
             }).done(function() {
-                $(location).attr('href', '/data.php');
+                location.reload();
             });
             return false;
         });

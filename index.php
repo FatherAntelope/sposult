@@ -180,6 +180,21 @@
 
 </body>
 <script>
+    function callDeleteCookies() {
+        delete_cookie("userData");
+        delete_cookie("userRole");
+        $(location).attr('href', '/');
+    }
+
+    function delete_cookie (cookie_name)
+    {
+        document.cookie = cookie_name += '=; Max-Age=0; path=/; domain=' + location.host;
+    }
+</script>
+
+<script>
+
+
     $('.message .close')
         .on('click', function() {
             $(this)
@@ -199,18 +214,8 @@
         $('#loadShow').dimmer('hide');
     }
 
-    function callDeleteCookies() {
-        delete_cookie("userData");
-        delete_cookie("userRole");
-        $(location).attr('href', '/');
-    }
-    
-    function delete_cookie (cookie_name)
-    {
-        var cookie_date = new Date ( );  // Текущая дата и время
-        cookie_date.setTime ( cookie_date.getTime() - 1 );
-        document.cookie = cookie_name += "=; expires=" + cookie_date.toGMTString();
-    }
+
+
     $(document).ready(function () {
         $("#registerUser").submit(function () {
             $.ajax({
@@ -219,7 +224,7 @@
                 data: $(this).serialize()
             }).done(function() {
                 //$('#loadShow').dimmer('show');
-                $(location).attr('href', '/');
+                location.reload();
             });
             return false;
         });
@@ -230,7 +235,7 @@
                 url: "/login.php",
                 data: $(this).serialize()
             }).done(function() {
-                $(location).attr('href', '/');
+                location.reload();
             });
             return false;
         });

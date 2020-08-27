@@ -16,15 +16,13 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
     <script src="/path/semantic.min.js"></script>
     <script src="/path/tablesort.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <link rel="shortcut icon" href="logo.png" type="image/png">
-    <title>Document</title>
+    <link rel="shortcut icon" href="/logo.png" type="image/png">
+    <title>Личный кабинет</title>
 </head>
 <body style="background-image: url('/background.png');">
 <br>
 <? if(isset($_COOKIE['userData']) && $_COOKIE['userRole'] == 'professor') {
     $userData = json_decode($_COOKIE['userData'], true);
-
-    print_r($userData);
 
     $resultsAllDataStudents = R::findAll('students');
     $countResultsAllDataStudents = count($resultsAllDataStudents);
@@ -165,35 +163,49 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
                 На главную
             </a>
         </div>
-        <? if(isset($_COOKIE['errorAuth'])) {?>
-            <div class="ui negative message">
-                <i class="close icon"></i>
-                <div class="header">Ошибка авторизации</div>
-                <ul>
-                    <li><p>Логин или пароль неверны. Повторите авторизацию</p></li>
-                    <li><p>Возможно, пользователь не зарегистрирован. Обратитесь к разработчику сайта</p></li>
-                </ul>
-            </div>
-        <? } ?>
         <h3 class="ui top attached header center aligned red inverted">Необходимо авторизоваться!</h3>
-        <form class="ui attached active tab segment form" id="resultCookie">
+        <form class="ui attached active tab segment form" id="loginUser">
             <h4 class="ui dividing header">Личные данные</h4>
-            <div class="fields">
+            <div class=" fields">
                 <div class="eight wide field">
                     <label>Логин</label>
-                    <input type="text" placeholder="Ваш логин" name="professorLogin" required>
+                    <input type="text" placeholder="Ваше имя" name="UserLogin" required>
                 </div>
                 <div class="eight wide field">
                     <label>Пароль</label>
-                    <input type="password" placeholder="Ваша пароль" name="professorPassword" required>
+                    <input type="password" placeholder="Ваша фамилия" name="UserPassword" required>
                 </div>
             </div>
-            <br>
+            <input type="hidden" name="whoAuthorization" value="1">
+            <? if(isset($_COOKIE['errorAuth'])) {?>
+                <div class="ui negative message">
+                    <i class="close icon"></i>
+                    <div class="header">Ошибка авторизации</div>
+                    <ul>
+                        <li><p>Логин или пароль неверны</p></li>
+                        <li><p>Повторите авторизацию</p></li>
+                        <li><p>Возможно, такой пользователь не зарегистрирован. Обратитесь к разработчику сайта для регистрации</p></li>
+                    </ul>
+                </div>
+            <? } ?>
             <button type="submit" class="fluid ui blue basic button">Войти</button>
         </form>
     </div>
 <? } ?>
 </body>
+
+<script>
+    function callDeleteCookies() {
+        delete_cookie("userData");
+        delete_cookie("userRole");
+        $(location).attr('href', '/');
+    }
+
+    function delete_cookie (cookie_name)
+    {
+        document.cookie = cookie_name += '=; Max-Age=0; path=/; domain=' + location.host;
+    }
+</script>
 
 <script>
     $('.message .close')
@@ -205,28 +217,15 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
         })
     ;
 
-    function callDeleteCookies() {
-        delete_cookie("userRole");
-        delete_cookie("userData");
-        $(location).attr('href', '/');
-    }
-
-    function delete_cookie (cookie_name)
-    {
-        var cookie_date = new Date();  // Текущая дата и время
-        cookie_date.setTime (cookie_date.getTime() - 1);
-        document.cookie = cookie_name += "=; expires=" + cookie_date.toGMTString();
-    }
-
     $(document).ready(function () {
 
-        $("#resultCookie").submit(function () {
+        $("#loginUser").submit(function () {
             $.ajax({
                 type: 'POST',
-                url: "/professor/login.php",
+                url: "/login.php",
                 data: $(this).serialize()
             }).done(function() {
-                $(location).attr('href', '/professor/lk.php');
+                location.reload();
             });
             return false;
         });
