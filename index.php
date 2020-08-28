@@ -10,7 +10,7 @@
     <script src="/path/jquery.min.js"></script>
     <script src="/path/semantic.min.js"></script>
 
-    <link rel="shortcut icon" href="logo.png" type="image/png">
+    <link rel="shortcut icon" href="/logo.png" type="image/png">
     <title>Главная</title>
 </head>
 <body style="background-image: url('/background.png');">
@@ -88,7 +88,6 @@
 
 
 
-
     <form class="ui attached  tab segment form <? if($tabNumber == 1) echo "active"; ?>" id="registerUser" data-tab="2">
         <h4 class="ui dividing header">Личные данные</h4>
         <div class=" fields">
@@ -107,9 +106,9 @@
                     <i class="users icon" style="color: white"></i>
                     <span class="text" style="color: white">Выбор</span>
                     <div class="menu">
-                        <div class="item" data-value="ПРО-318">ПРО-418</div>
-                        <div class="item" data-value="ПРО-317">ПРО-417</div>
-                        <div class="item" data-value="ПРО-316">ПРО-416</div>
+                        <div class="item" data-value="ПРО-418">ПРО-418</div>
+                        <div class="item" data-value="ПРО-417">ПРО-417</div>
+                        <div class="item" data-value="ПРО-416">ПРО-416</div>
                         <div class="item" data-value="ИБ">ИБ</div>
                     </div>
                 </div>

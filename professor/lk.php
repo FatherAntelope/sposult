@@ -1,7 +1,13 @@
 <?php
 
 require $_SERVER['DOCUMENT_ROOT']."/db/db.php";
-require $_SERVER['DOCUMENT_ROOT']."/standards.php";
+$settings = array(
+    'normalDistance' => 1200, 'niceDistance' => 2000,
+    'pulsePeaceMin' => 60, 'pulsePeaceMax' => 90,
+    'pulseWarmupMin' => 90, 'pulseWarmupMax' => 120,
+    'pulseTrainingMin' => 120, 'pulseTrainingMax' => 160
+);
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -30,7 +36,7 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
     ?>
     <div class="ui container">
         <div class="field">
-            <button class="ui floated small red labeled icon button" onclick="callDeleteCookies()">
+            <button class="ui floated small red labeled icon button" onclick="callDeleteCookies()" >
                 <i class="power off icon"></i>
                 Выйти
             </button>
@@ -38,7 +44,7 @@ require $_SERVER['DOCUMENT_ROOT']."/standards.php";
                 <i class="home icon"></i>
                 На главную
             </a>
-            <a href="/" class="ui floated small blue labeled icon button">
+            <a href="/professor/visits.php" class="ui floated small blue labeled icon button" style="margin-top: 5px">
                 <i class="edit icon"></i>
                 Посещения
             </a>

@@ -12,19 +12,18 @@ if(false) {
 } else {
     if (R::count('students', "user_login = ?", array($_POST['UserLogin'])) == 0) {
         $table = R::dispense('students');
-
-        $table->userLogin = $_POST['UserLogin'];
-        $table->userPassword = password_hash($_POST['UserPassword'], PASSWORD_DEFAULT);
-        $table->userName = $_POST['UserName'];
-        $table->userSurname = $_POST['UserSurname'];
-        $table->userGroup = $_POST['UserGroup'];
-        $table->userHeight = $_POST['UserHeight'];
-        $table->userWeight = $_POST['UserWeight'];
+        $table->user_login = $_POST['UserLogin'];
+        $table->user_password = password_hash($_POST['UserPassword'], PASSWORD_DEFAULT);
+        $table->user_name = $_POST['UserName'];
+        $table->user_surname = $_POST['UserSurname'];
+        $table->user_group = $_POST['UserGroup'];
+        $table->user_height = $_POST['UserHeight'];
+        $table->user_weight = $_POST['UserWeight'];
         R::store($table);
 
     } else {
         setcookie("errorRegistration", true, time() + 6);
-        die();
+        die(header("HTTP/1.0 400 Bad Request"));
     }
 }
 
