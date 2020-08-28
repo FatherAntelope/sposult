@@ -1,9 +1,9 @@
 <?php
 require $_SERVER['DOCUMENT_ROOT']."/db/rb.php";
 $username = 'root';
-$password = '';
+$password = 'admin';
 $dbname = 'sposult';
-$hostname = 'localhost';
+$hostname = '192.168.0.103';
 R::setup( "mysql:host={$hostname};dbname={$dbname}", $username, $password);
 if ( !R::testConnection() )
 {
