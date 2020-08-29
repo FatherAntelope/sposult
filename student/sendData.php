@@ -7,7 +7,6 @@ $table = R::findOne('visits', 'student_id = :student_id AND date_training = :dat
 ));
 
 
-$table->date_training = $_POST['DateTraining'];
 $table->date_filling = date("Y-m-d");
 $table->pulse_first = $_POST['PulseFirst'];
 $table->pulse_second = $_POST['PulseSecond'];

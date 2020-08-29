@@ -143,8 +143,8 @@ $settings = array(
                 <i class="close icon"></i>
                 <div class="header">Данные отсутствуют</div>
                 <ul>
-                    <li><p>Заполните данные занятия</p></li>
-                    <li><p>Если вы присутствовали на занятии, а данные внести не получается, то обратитесь к разработчику сайта или к преподавателю</p></li>
+                    <li><p>Вы еще не посетили ни одно занятие</p></li>
+                    <li><p>Если вы присутствовали на занятии, а данные отредактировать не получается, то обратитесь к разработчику сайта или к преподавателю</p></li>
                 </ul>
             </div>
         <? } ?>
@@ -388,7 +388,7 @@ $settings = array(
             ?>
         </div>
         <div class="field" style="margin-bottom: 20px">
-            <h4 class="ui dividing header">Заполненные даты</h4>
+            <h4 class="ui dividing header">Заполненные даты с проверкой</h4>
             <?
             foreach ($allDatesCheck as $date) {
                 echo "<div class=\"ui brown label\">". date("d.m.Y", strtotime($date)) ."</div>";
@@ -513,7 +513,7 @@ $settings = array(
                 url: "/student/sendData.php",
                 data: $(this).serialize()
             }).done(function() {
-                $(location).attr('href', '/data.php');
+                location.reload();
             });
             return false;
         });
