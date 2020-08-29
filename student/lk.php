@@ -31,22 +31,44 @@ $settings = array(
 
     $dataUser = json_decode($_COOKIE['userData'], true);
 
-    $allDatesTrainings = R::getAll("SELECT DISTINCT date_training FROM visits ORDER BY date_training ASC");
-    $countAllDatesTrainings = count($allDatesTrainings);
 
-    $allDataVisitedStudent = R::findAll('visits', 'student_id = :student_id AND visited = 1 ORDER BY date_training DESC', array(
+
+
+    $allDataStudent = R::findAll('visits', 'student_id = :student_id ORDER BY date_training DESC', array(
         ':student_id' => $dataUser['id']
     ));
-    $allDatesVisited = R::getAll("SELECT date_training FROM visits WHERE student_id = ? AND visited = ? ORDER BY date_training ASC", [$dataUser['id'], 1]);
-    $countAllDataVisitedStudent = count($allDataVisitedStudent);
 
 
-    $allDateCheck = R::getAll("SELECT date_training FROM visits WHERE student_id = ? AND checked = ? ORDER BY date_training ASC", [$dataUser['id'], 1]);
-    $countAllDateCheck = count($allDateCheck);
 
 
-    if($countAllDataVisitedStudent != 0)
+    $allDatesVisited = array();
+    $countAllDatesVisitedStudent = 0;
+    foreach ($allDataStudent as $data) {
+        if($data['visited'] == 1) {
+            $allDatesVisited[] = $data['date_training'];
+            $countAllDatesVisitedStudent++;
+        }
+    }
+
+    if($countAllDatesVisitedStudent != 0)
     {
+        $allDatesTrainings = R::getAll("SELECT DISTINCT date_training FROM visits ORDER BY date_training ASC");
+        $countAllDatesTrainings = count($allDatesTrainings);
+
+
+        $allDatesCheck = array();
+        $countAllDatesCheck = 0;
+        foreach ($allDataStudent as $data) {
+            if($data['checked'] == 1) {
+                $allDatesCheck[] = $data['date_training'];
+                $countAllDatesCheck++;
+            }
+        }
+
+        $allDatesUncheck = array_diff($allDatesVisited, $allDatesCheck);
+
+
+
         $headerHorizonDistance = array('Дата'); $hearerVerticalDistance = array('Метры');
         $headerHorizonPulse = array('Дата'); $hearerVerticalOnePulse = array('До разминки'); $hearerVerticalTwoPulse = array('После разминки'); $hearerVerticalThreePulse = array('После бега');
 
@@ -55,13 +77,13 @@ $settings = array(
         $sumPulseSecond = 0;
         $sumPulseThird = 0;
 
-        foreach ( $allDataVisitedStudent AS $result ) {
+        foreach ( $allDataStudent AS $result ) {
             $headerHorizonDistance[] = date("d.m.Y", strtotime($result['date_training']));
             $hearerVerticalDistance[] = (Integer)($result['distance']);
             $sumDistance += (Integer)($result['distance']);
         }
 
-        $averageDistance = $sumDistance / $countAllDataVisitedStudent;
+        $averageDistance = $sumDistance / $countAllDatesVisitedStudent;
 
         $dataDistanceForGraphic = array_map(
             function ($headerHorizonDistance, $hearerVerticalDistance) {
@@ -72,7 +94,7 @@ $settings = array(
 
 
 
-        foreach ( $allDataVisitedStudent AS $result ) {
+        foreach ( $allDataStudent AS $result ) {
             $headerHorizonPulse[] = date("d.m.Y", strtotime($result['date_training']));
             $hearerVerticalOnePulse[] = (Integer)($result['pulse_first']);
             $hearerVerticalTwoPulse[] = (Integer)($result['pulse_second']);
@@ -82,9 +104,9 @@ $settings = array(
             $sumPulseThird += (Integer)($result['pulse_third']);
         }
 
-        $averagePulseFirst = $sumPulseFirst / $countAllDataVisitedStudent;
-        $averagePulseSecond = $sumPulseSecond/ $countAllDataVisitedStudent;
-        $averagePulseThird = $sumPulseThird/ $countAllDataVisitedStudent;
+        $averagePulseFirst = $sumPulseFirst / $countAllDatesVisitedStudent;
+        $averagePulseSecond = $sumPulseSecond/ $countAllDatesVisitedStudent;
+        $averagePulseThird = $sumPulseThird/ $countAllDatesVisitedStudent;
 
         $dataPulseForGraphic = array_map(
             function ($headerHorizonPulse , $hearerVerticalOnePulse, $hearerVerticalTwoPulse, $hearerVerticalThreePulse) {
@@ -106,15 +128,17 @@ $settings = array(
                 <i class="home icon"></i>
                 На главную
             </a>
+            <? if($countAllDatesVisitedStudent !=0 ) { ?>
             <button class="ui floated small blue labeled icon button" onclick="openModalSeeStatisticVisits()" style="margin-top: 5px">
                 <i class="bar chart icon"></i>
                 Статистика посещений
             </button>
+            <? } ?>
         </div>
         <div class="ui header center aligned">
             <div class="ui big label blue"><? echo $dataUser['user_name'].' '.$dataUser['user_surname'].' ('.$dataUser['user_group'].')'; ?> </div>
         </div>
-        <? if ($countAllDataVisitedStudent == 0) {?>
+        <? if ($countAllDatesVisitedStudent == 0) {?>
             <div class="ui negative message">
                 <i class="close icon"></i>
                 <div class="header">Данные отсутствуют</div>
@@ -133,7 +157,7 @@ $settings = array(
                 <th rowspan="2" class="sorted descending">Дата</th>
                 <th rowspan="2">Километраж (м.)</th>
                 <th colspan="3">Пульс (уд. в мин.)</th>
-                <th rowspan="2">Действие</th>
+                <th rowspan="2">Статус</th>
             </tr>
             <tr>
                 <th>До разминки</th>
@@ -142,45 +166,53 @@ $settings = array(
             </tr>
             </thead>
             <tbody class="center aligned">
-            <? foreach ( $allDataVisitedStudent AS $result ) {
-                echo "<tr>";
-                //Дата
-                echo "<td>" . date("d.m.Y", strtotime($result['date_training'])) . "</td>";
+            <? foreach ( $allDataStudent AS $result ) {
+                if($result['visited'] == 1) {
+                    echo "<tr>";
+                    //Дата
+                    echo "<td>" . date("d.m.Y", strtotime($result['date_training'])) . "</td>";
 
-                //Дистанция
-                if ($result['distance'] >= $settings['normalDistance'] && $result['distance'] < $settings['niceDistance']) {
-                    echo "<td class='warning'>" . $result['distance'] . "</td>";
-                } elseif ($result['distance'] < $settings['normalDistance']) {
-                    echo "<td class='negative'>" . $result['distance'] . "</td>";
-                } elseif ($result['distance'] >= $settings['niceDistance']) {
-                    echo "<td class='positive'>" . $result['distance'] . "</td>";
+                    //Дистанция
+                    if ($result['distance'] >= $settings['normalDistance'] && $result['distance'] < $settings['niceDistance']) {
+                        echo "<td class='warning'>" . $result['distance'] . "</td>";
+                    } elseif ($result['distance'] < $settings['normalDistance']) {
+                        echo "<td class='negative'>" . $result['distance'] . "</td>";
+                    } elseif ($result['distance'] >= $settings['niceDistance']) {
+                        echo "<td class='positive'>" . $result['distance'] . "</td>";
+                    }
+
+                    //Пульс построение
+                    if ($result['pulse_first'] >= $settings['pulsePeaceMin'] && $result['pulse_first'] <= $settings['pulsePeaceMax']) {
+                        echo "<td class='positive'>" . $result['pulse_first'] . "</td>";
+                    } else {
+                        echo "<td class='negative'>" . $result['pulse_first'] . "</td>";
+                    }
+
+                    if ($result['pulse_second'] >= $settings['pulseWarmupMin'] && $result['pulse_second'] <= $settings['pulseWarmupMax']) {
+                        echo "<td class='positive'>" . $result['pulse_second'] . "</td>";
+                    } else {
+                        echo "<td class='negative'>" . $result['pulse_second'] . "</td>";
+                    }
+
+                    if ($result['pulse_third'] >= $settings['pulseTrainingMin'] && $result['pulse_third'] <= $settings['pulseTrainingMax']) {
+                        echo "<td class='positive'>" . $result['pulse_third'] . "</td>";
+                    } else {
+                        echo "<td class='negative'>" . $result['pulse_third'] . "</td>";
+                    }
+                    //echo "</tr>";
+                    if($result['date_filling'] != null) {
+                        if ($result['checked']) {
+                            echo "<td><i class='large check circle green icon'></i></td>";
+                        } else {
+                            echo "<td><i class=\"asterisk loading brown icon\"></i></td>";
+                        }
+                    } else {
+                        echo "<td><i class='warning circle red icon'></i></td>";
+                    }
+
+                    echo "</tr>";
                 }
 
-                //Пульс построение
-                if ($result['pulse_first'] >= $settings['pulsePeaceMin'] && $result['pulse_first'] <= $settings['pulsePeaceMax']) {
-                    echo "<td class='positive'>" . $result['pulse_first'] . "</td>";
-                } else {
-                    echo "<td class='negative'>" . $result['pulse_first'] . "</td>";
-                }
-
-                if ($result['pulse_second'] >= $settings['pulseWarmupMin'] && $result['pulse_second'] <= $settings['pulseWarmupMax']) {
-                    echo "<td class='positive'>" . $result['pulse_second'] . "</td>";
-                } else {
-                    echo "<td class='negative'>" . $result['pulse_second'] . "</td>";
-                }
-
-                if ($result['pulse_third'] >= $settings['pulseTrainingMin'] && $result['pulse_third'] <= $settings['pulseTrainingMax']) {
-                    echo "<td class='positive'>" . $result['pulse_third'] . "</td>";
-                } else {
-                    echo "<td class='negative'>" . $result['pulse_third'] . "</td>";
-                }
-                //echo "</tr>";
-                if ($result['checked']) {
-                    echo "<td><i class='large check circle green icon'></i></td>";
-                } else {
-                    echo "<td><i class='large pencil alternate brown icon'></i></td>";
-                }
-                echo "</tr>";
             }
             ?>
             </tbody>
@@ -188,12 +220,12 @@ $settings = array(
             <tr>
                 <th colspan="7">
                     <button class="ui right floated small orange labeled icon button" onclick="openModalAddDataVisits()">
-                        <i class="plus circle icon"></i>
-                        Добавить
+                        <i class="edit icon"></i>
+                        Отредактировать
                     </button>
                     <div class="ui orange label">
-                        <i class="edit icon"></i>
-                        <? echo $countAllDataVisitedStudent; ?>
+                        <i class="calendar alternate icon"></i>
+                        <? echo $countAllDatesVisitedStudent; ?>
                     </div>
                 </th>
             </tr>
@@ -217,7 +249,7 @@ $settings = array(
             Графики
         </h3>
         <div class="ui segment attached">
-            <? if ($countAllDataVisitedStudent != 0) {?>
+            <? if ($countAllDatesVisitedStudent != 0) {?>
                 <div id="chart_distance"></div>
                 <div id="chart_pulseFirst"></div>
             <? } ?>
@@ -265,49 +297,73 @@ $settings = array(
 <? } ?>
 
 <div class="ui modal" id="addDataVisits">
-    <div class="header" style="color: #f2711c">Добавление данных</div>
+    <div class="header" style="color: #f2711c">Редактирование данных</div>
     <div class="content">
         <form class="ui form" id="sendData">
-            <div class=" fields">
+            <div class="fields">
                 <div class="four wide field">
                     <label>Дата занятия</label>
-                    <input type="date" value="<?php echo date("Y-m-d");?>" name="DateTraining" required>
+                    <div class="ui left icon input">
+                        <select class="ui fluid dropdown" name="DateTraining" required>
+                            <option value=""></option>
+                            <? foreach ($allDatesUncheck as $date) { ?>
+                                <option value="<? echo $date; ?>"><? echo date("d.m.Y", strtotime($date)); ?></option>
+                            <? } ?>
+                        </select>
+                        <i class="calendar blue icon"></i>
+                    </div>
+
                 </div>
                 <div class="three wide field">
                     <label>Пульс до разминки</label>
-                    <input type="number" name="PulseFirst" min="0" max="999" required>
+                    <div class="ui left icon input">
+                        <input type="number" name="PulseFirst" min="0" max="999" required>
+                        <i class="heartbeat blue icon"></i>
+                    </div>
                 </div>
                 <div class="three wide field">
                     <label>Пульс после разминки</label>
-                    <input type="number" name="PulseSecond" min="0" max="999" required>
+                    <div class="ui left icon input">
+                        <input type="number" name="PulseSecond" min="0" max="999" required>
+                        <i class="heartbeat blue icon"></i>
+                    </div>
+
                 </div>
                 <div class="three wide field">
                     <label>Пульс после бега</label>
-                    <input type="number" name="PulseThird" min="0" max="999" required>
+                    <div class="ui left icon input">
+                        <input type="number" name="PulseThird" min="0" max="999" required>
+                        <i class="heartbeat blue icon"></i>
+                    </div>
+
                 </div>
                 <div class="three wide field">
                     <label>Дистанция</label>
-                    <input type="number" placeholder="В метрах" min="0" max="99999" name="Distance" required>
+                    <div class="ui left icon input">
+                        <input type="number" placeholder="В метрах" min="0" max="99999" name="Distance" required>
+                        <i class="road blue icon"></i>
+                    </div>
+
                 </div>
             </div>
             <br>
+            <input type="hidden" name="UserID" value="<? echo $dataUser['id']; ?>">
             <button type="submit" class="fluid ui blue basic button">Отправить данные</button>
         </form>
     </div>
 </div>
 
-
 <div class="ui modal" id="seeStatisticVisits">
     <div class="header" style="color: #f2711c">Статистика посещений</div>
     <div class="content">
         <h3 class="ui horizontal divider header"><i class="bar chart blue icon"></i>Прогресс</h3>
-        <div class="ui progress indicating" data-value="<? echo ($countAllDataVisitedStudent * 100)/$countAllDatesTrainings; ?>">
+        <div class="ui progress indicating" data-value="<? echo ($countAllDatesVisitedStudent * 100)/$countAllDatesTrainings; ?>">
             <div class="bar">
                 <div class="progress"></div>
             </div>
             <div class="label">Прогресс посещений</div>
         </div>
-        <div class="ui progress indicating" data-value="<? echo ($countAllDateCheck * 100)/$countAllDatesTrainings; ?>">
+        <div class="ui progress indicating" data-value="<? echo ($countAllDatesCheck * 100)/$countAllDatesTrainings; ?>">
             <div class="bar">
                 <div class="progress"></div>
             </div>
@@ -318,8 +374,8 @@ $settings = array(
         <div class="field" style="margin-bottom: 20px">
             <h4 class="ui dividing header">Все даты</h4>
             <?
-            foreach ($allDatesTrainings as $date) {
-                echo "<div class=\"ui orange label\">". date("d.m.Y", strtotime($date['date_training'])) ."</div>";
+            foreach ($allDatesTrainings as $data) {
+                echo "<div class=\"ui orange label\">". date("d.m.Y", strtotime($data['date_training'])) ."</div>";
             }
             ?>
         </div>
@@ -327,15 +383,15 @@ $settings = array(
             <h4 class="ui dividing header">Посещенные даты</h4>
             <?
             foreach ($allDatesVisited as $date) {
-                echo "<div class=\"ui green label\">". date("d.m.Y", strtotime($date['date_training'])) ."</div>";
+                echo "<div class=\"ui green label\">". date("d.m.Y", strtotime($date)) ."</div>";
             }
             ?>
         </div>
         <div class="field" style="margin-bottom: 20px">
             <h4 class="ui dividing header">Заполненные даты</h4>
             <?
-            foreach ($allDateCheck as $date) {
-                echo "<div class=\"ui brown label\">". date("d.m.Y", strtotime($date['date_training'])) ."</div>";
+            foreach ($allDatesCheck as $date) {
+                echo "<div class=\"ui brown label\">". date("d.m.Y", strtotime($date)) ."</div>";
             }
             ?>
         </div>
