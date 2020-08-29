@@ -2,7 +2,7 @@
 require $_SERVER['DOCUMENT_ROOT'] . "/db/db.php";
 
 if(isset($_POST['checkAllDataStudents'])) {
-    $dataUncheckedAll = R::find('students', 'checked = :checked', array(
+    $dataUncheckedAll = R::find('visits', 'checked = :checked', array(
         ':checked' => false
     ));
 
@@ -11,7 +11,7 @@ if(isset($_POST['checkAllDataStudents'])) {
         R::store($dataUnchecked);
     }
 } elseif (isset($_POST['buttonID'])) {
-    $dataUnchecked = R::load('students', $_POST['buttonID']);
+    $dataUnchecked = R::load('visits', $_POST['buttonID']);
     $dataUnchecked['checked'] = true;
     R::store($dataUnchecked);
 }

@@ -6,7 +6,7 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="/path/semantic.min.css"/>
-    <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.8/components/icon.min.css'>
+    <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/icon.min.css'>
     <script src="/path/jquery.min.js"></script>
     <script src="/path/semantic.min.js"></script>
 
@@ -37,11 +37,17 @@
             <div class=" fields">
                 <div class="eight wide field">
                     <label>Логин</label>
-                    <input type="text" placeholder="Ваш логин" name="UserLogin" required>
+                    <div class="ui left icon input">
+                        <input type="text" placeholder="Ваш логин" name="UserLogin" required>
+                        <i class="id badge blue icon"></i>
+                    </div>
                 </div>
                 <div class="eight wide field">
                     <label>Пароль</label>
-                    <input type="password" placeholder="Ваш пароль" name="UserPassword" required>
+                    <div class="ui left icon input">
+                        <input type="password" placeholder="Ваш пароль" name="UserPassword" required>
+                        <i class="lock blue icon"></i>
+                    </div>
                 </div>
             </div>
             <div class="field inline" style="margin-top: 5px">
@@ -71,7 +77,7 @@
     <? } else { ?>
         <div class="segment ui tab attached <? if($tabNumber == 0 || $tabNumber == 2) echo "active"; ?>" data-tab="1">
             <h2 class="ui center aligned icon header orange">
-                <i class="circular users icon"></i>
+                <i class="address book circular icon"></i>
                 Вы можете перейти в личный кабинет, так как ваша сессия активна
                 <div class="field">
                     <br>
@@ -93,11 +99,17 @@
         <div class=" fields">
             <div class="eight wide field required">
                 <label>Имя</label>
-                <input type="text" placeholder="Ваше имя" name="UserName" required>
+                <div class="ui left icon input">
+                    <input type="text" placeholder="Ваше имя" name="UserName" required>
+                    <i class="address card blue icon"></i>
+                </div>
             </div>
             <div class="seven wide field required">
                 <label>Фамилия</label>
-                <input type="text" placeholder="Ваша фамилия" name="UserSurname" required>
+                <div class="ui left icon input">
+                    <input type="text" placeholder="Ваша фамилия" name="UserSurname" required>
+                    <i class="address card blue icon"></i>
+                </div>
             </div>
             <div class="three wide field required">
                 <label>Группа</label>
@@ -119,11 +131,18 @@
         <div class="fields">
             <div class="two wide field required">
                 <label>Рост</label>
-                <input type="number" placeholder="В см" name="UserHeight" required>
+                <div class="ui left icon input">
+                    <input type="number" placeholder="В см" name="UserHeight" required>
+                    <i class="child blue icon"></i>
+                </div>
+
             </div>
             <div class="two wide field required">
                 <label>Вес</label>
-                <input type="number" placeholder="В кг" name="UserWeight" required>
+                <div class="ui left icon input">
+                    <input type="number" placeholder="В кг" name="UserWeight" required>
+                    <i class="weight blue icon"></i>
+                </div>
             </div>
         </div>
 
@@ -131,14 +150,21 @@
         <div class="fields">
             <div class="eight wide field required">
                 <label>Логин</label>
-                <input type="text" placeholder="Только на латинице от 6 до 20 символов" name="UserLogin" minlength="6" maxlength="20" pattern="^[a-zA-Z]+$" onkeyup="this.value=this.value.replace(/^[а-яА-Я\s]+$/,'')" required>
+                <div class="ui left icon input">
+                    <input type="text" placeholder="Только на латинице от 6 до 20 символов" name="UserLogin" minlength="6" maxlength="20" pattern="^[a-zA-Z]+$" onkeyup="this.value=this.value.replace(/^[а-яА-Я\s]+$/,'')" required>
+                    <i class="id badge blue icon"></i>
+                </div>
             </div>
             <div class="eight wide field required">
                 <label>Пароль</label>
-                <input type="password" name="UserPassword"  placeholder="От 6 до 20 символов" minlength="6" maxlength="20" required>
+                <div class="ui left icon input">
+                    <input type="password" name="UserPassword"  placeholder="От 6 до 20 символов" minlength="6" maxlength="20" required>
+                    <i class="lock blue icon"></i>
+                </div>
+
             </div>
         </div>
-        <div class="field">
+        <div class="field" style="margin-top: 7px">
             <div class="ui checkbox">
                 <input type="checkbox" name="UserAgree" required>
                 <label>Я согласен с обработкой персональных данных</label>
@@ -166,7 +192,7 @@
 <div class="ui page dimmer" id="loadShow" >
     <div class="ui active dimmer" style="background: #f2711c">
         <h2 class="ui icon header" style="color: white;">
-            <i class="lock icon"></i>
+            <i class="user plus icon"></i>
             <div class="content">
                 Успешная регистрация!
                 <div class="sub header" style="color: #d9d9d9">Вы успешно зарегистрировались и теперь можете войти в свой личный кабинет</div>
@@ -212,8 +238,6 @@
     $('.ui.dropdown')
         .dropdown()
     ;
-
-
 
     $(document).ready(function () {
         $("#registerUser").submit(function () {

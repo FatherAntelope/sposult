@@ -17,7 +17,7 @@ $settings = array(
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="/path/semantic.min.css"/>
-    <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.8/components/icon.min.css'>
+    <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/icon.min.css'>
     <script src="/path/jquery.min.js"></script>
     <script src="/path/semantic.min.js"></script>
     <script src="/path/tablesort.js"></script>
@@ -30,9 +30,10 @@ $settings = array(
 <? if(isset($_COOKIE['userData']) && $_COOKIE['userRole'] == 'professor') {
     $userData = json_decode($_COOKIE['userData'], true);
 
-    $resultsAllDataStudents = R::findAll('students');
+    $resultsAllDataStudents = R::findAll('visits');
     $countResultsAllDataStudents = count($resultsAllDataStudents);
-    $countUncheckedDataStudents = R::count('students', 'checked = ?', [false]);
+
+    $countUncheckedDataStudents = R::count('visits', 'checked = ?', [false]);
     ?>
     <div class="ui container">
         <div class="field">
@@ -68,6 +69,7 @@ $settings = array(
             <? } ?>
 
         </div>
+
         <table class="ui sortable celled table attached">
             <thead class="center aligned">
             <tr>
@@ -85,10 +87,11 @@ $settings = array(
             </thead>
             <tbody class="center aligned">
             <? foreach ( $resultsAllDataStudents AS $result ) {
+                $student = R::load('students', $result['student_id']);
                 echo "<tr>";
                 //Дата
                 echo "<td>" . date("d.m.Y", strtotime($result['date_training'])) . "</td>";
-                echo "<td>" . $result['user_surname']." ".mb_substr($result['user_name'],0,1,'UTF-8'). ".</td>";
+                echo "<td>" . $student['user_surname']." ".mb_substr($student['user_name'],0,1,'UTF-8'). ".</td>";
 
                 //Дистанция
                 if ($result['distance'] >= $settings['normalDistance'] && $result['distance'] < $settings['niceDistance']) {
@@ -139,7 +142,7 @@ $settings = array(
                 <th colspan="7">
 
                     <div class="ui orange label">
-                        <i class="edit icon"></i>
+                        <i class="id card icon"></i>
                         <? echo $countResultsAllDataStudents; ?>
                     </div>
                 </th>
@@ -223,6 +226,8 @@ $settings = array(
         })
     ;
 
+    $('table').tablesort();
+
     $(document).ready(function () {
 
         $("#loginUser").submit(function () {
@@ -239,7 +244,7 @@ $settings = array(
         $(".resultCheckData").submit(function () {
             $.ajax({
                 type: 'POST',
-                url: "/professor/checkData.php",
+                url: "/professor/sendCheckData.php",
                 data: $(this).serialize()
             }).done(function() {
                 $(location).attr('href', '/professor/lk.php');

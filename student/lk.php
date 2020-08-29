@@ -17,7 +17,7 @@ $settings = array(
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="/path/semantic.min.css"/>
-    <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.8/components/icon.min.css'>
+    <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/icon.min.css'>
     <script src="/path/jquery.min.js"></script>
     <script src="/path/semantic.min.js"></script>
     <script src="/path/tablesort.js"></script>
@@ -31,12 +31,18 @@ $settings = array(
 
     $dataUser = json_decode($_COOKIE['userData'], true);
 
-    $resultsDataStudent = R::find('students', 'user_name = :userLogin ORDER BY date_training DESC', array(
-        ':userLogin' => $dataUser['user_login'],
+    $resultsDataStudent = R::findAll('visits', 'student_id = :student_id AND visited = 1 AND date_filling IS NOT NULL ORDER BY date_training DESC', array(
+        ':student_id' => $dataUser['id']
+    ));
+
+    $dateVisits = R::findAll('visits', 'student_id = :student_id AND visited = 1 ORDER BY date_training DESC', array(
+        ':student_id' => $dataUser['id']
     ));
 
 
     $countResultsData = count($resultsDataStudent);
+    $countDateVisits =  count($dateVisits);
+    $countAllDates = R::count( 'visits', ' student_id = ? ', [ $dataUser['id'] ] );
 
     if($countResultsData != 0)
     {
@@ -99,6 +105,10 @@ $settings = array(
                 <i class="home icon"></i>
                 На главную
             </a>
+            <button class="ui floated small blue labeled icon button" onclick="openModalSeeStatisticVisits()" style="margin-top: 5px">
+                <i class="bar chart icon"></i>
+                Статистика посещений
+            </button>
         </div>
         <div class="ui header center aligned">
             <div class="ui big label blue"><? echo $dataUser['user_name'].' '.$dataUser['user_surname'].' ('.$dataUser['user_group'].')'; ?> </div>
@@ -108,8 +118,8 @@ $settings = array(
                 <i class="close icon"></i>
                 <div class="header">Данные отсутствуют</div>
                 <ul>
-                    <li><p>Проверьте корректность авторизации</p></li>
-                    <li><p>Заполните данные</p></li>
+                    <li><p>Заполните данные занятия</p></li>
+                    <li><p>Если вы присутствовали на занятии, а данные внести не получается, то обратитесь к разработчику сайта или к преподавателю</p></li>
                 </ul>
             </div>
         <? } ?>
@@ -120,7 +130,7 @@ $settings = array(
             <thead class="center aligned">
             <tr>
                 <th rowspan="2" class="sorted descending">Дата</th>
-                <th rowspan="2" >Километраж (м.)</th>
+                <th rowspan="2">Километраж (м.)</th>
                 <th colspan="3">Пульс (уд. в мин.)</th>
                 <th rowspan="2">Действие</th>
             </tr>
@@ -183,7 +193,7 @@ $settings = array(
             <tfoot>
             <tr>
                 <th colspan="7">
-                    <button class="ui right floated small orange labeled icon button" onclick="openModalAddData()">
+                    <button class="ui right floated small orange labeled icon button" onclick="openModalAddDataVisits()">
                         <i class="plus circle icon"></i>
                         Добавить
                     </button>
@@ -260,10 +270,10 @@ $settings = array(
     </div>
 <? } ?>
 
-<div class="ui modal">
+<div class="ui modal" id="addDataVisits">
     <div class="header" style="color: #f2711c">Добавление данных</div>
     <div class="content">
-        <form class="ui form" id="resultForm">
+        <form class="ui form" id="sendData">
             <div class=" fields">
                 <div class="four wide field">
                     <label>Дата занятия</label>
@@ -283,7 +293,7 @@ $settings = array(
                 </div>
                 <div class="three wide field">
                     <label>Дистанция</label>
-                    <input type="number" placeholder="В метрах" min="0" max="9999" name="Distance" required>
+                    <input type="number" placeholder="В метрах" min="0" max="99999" name="Distance" required>
                 </div>
             </div>
             <br>
@@ -291,6 +301,34 @@ $settings = array(
         </form>
     </div>
 </div>
+
+
+<div class="ui modal" id="seeStatisticVisits">
+    <div class="header" style="color: #f2711c">Статистика посещений</div>
+    <div class="content">
+        <h4 class="ui horizontal divider header"><i class="bar chart blue icon"></i>Прогресс</h4>
+        <div class="ui progress indicating" data-value="<? echo ($countDateVisits * 100)/$countAllDates; ?>">
+            <div class="bar">
+                <div class="progress"></div>
+            </div>
+            <div class="label">Прогресс посещений</div>
+        </div>
+        <div class="ui progress indicating" data-value="<? echo ($countResultsData * 100)/$countAllDates; ?>">
+            <div class="bar">
+                <div class="progress"></div>
+            </div>
+            <div class="label">Прогресс заполнений</div>
+        </div>
+        <br>
+        <h4 class="ui horizontal divider header"><i class="calendar check blue icon"></i>Даты</h4>
+        <?
+        foreach ($dateVisits as $date) {
+            echo "<div class=\"ui green label\">". date("d.m.Y", strtotime($date['date_training'])) ."</div>";
+         }
+        ?>
+    </div>
+</div>
+
 
 </body>
 
@@ -387,16 +425,22 @@ $settings = array(
         .dropdown()
     ;
 
-    function openModalAddData() {
-        $('.ui.modal').modal('show');
+    $('.ui.progress').progress();
+
+    function openModalAddDataVisits() {
+        $('#addDataVisits').modal('show');
+    }
+
+    function openModalSeeStatisticVisits() {
+        $('#seeStatisticVisits').modal('show');
     }
 
 
     $(document).ready(function () {
-        $("#resultForm").submit(function () {
+        $("#sendData").submit(function () {
             $.ajax({
                 type: 'POST',
-                url: "/sendData.php",
+                url: "/student/sendData.php",
                 data: $(this).serialize()
             }).done(function() {
                 $(location).attr('href', '/data.php');
