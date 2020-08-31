@@ -32,8 +32,6 @@ $settings = array(
     $dataUser = json_decode($_COOKIE['userData'], true);
 
 
-
-
     $allDataStudent = R::findAll('visits', 'student_id = :student_id ORDER BY date_training DESC', array(
         ':student_id' => $dataUser['id']
     ));
@@ -219,10 +217,12 @@ $settings = array(
             <tfoot>
             <tr>
                 <th colspan="7">
+                    <? if($countAllDatesVisitedStudent != $countAllDatesCheck) { ?>
                     <button class="ui right floated small orange labeled icon button" onclick="openModalAddDataVisits()">
                         <i class="edit icon"></i>
                         Отредактировать
                     </button>
+                    <? } ?>
                     <div class="ui orange label">
                         <i class="calendar alternate icon"></i>
                         <? echo $countAllDatesVisitedStudent; ?>

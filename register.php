@@ -1,6 +1,6 @@
 <?php
 require $_SERVER['DOCUMENT_ROOT'] . "/db/db.php";
-
+R::freeze(true);
 if(false) {
     $table = R::dispense('professors');
     $table->professorName = "Имя";
@@ -28,6 +28,6 @@ if(false) {
 }
 
 
-
+R::close();
 
 ?>

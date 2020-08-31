@@ -46,9 +46,13 @@ function array_sum_rows($arr) {
             <i class="address book icon"></i>
             В личный кабинет
         </a>
-        <button class="ui floated small blue labeled icon button" onclick="showModal()" style="margin-top: 5px">
+        <button class="ui floated small blue labeled icon button" onclick="showModalSendVisitedStudents()" style="margin-top: 5px">
             <i class="edit icon"></i>
             Внести присутствующих
+        </button>
+        <button class="ui floated small brown labeled icon button" onclick="showModalSendAdjustmentStudents()" style="margin-top: 5px">
+            <i class="edit icon"></i>
+            Внести отработки
         </button>
     </div>
     <div style="overflow-x: scroll; margin-top: 15px">
@@ -187,7 +191,37 @@ function array_sum_rows($arr) {
     </div>
 </form>
 
+<form class="ui long modal tiny" id="sendAdjustmentStudents">
+    <div class="header" style="color: #f2711c">
+        Внос отработок
+    </div>
+    <div class="content">
 
+        <div class="ui form">
+            <div class="field">
+                <select class="ui fluid dropdown" name="DateTraining" required>
+                    <option value="">Дата занятия</option>
+                    <? foreach ($dates as $date) { ?>
+                        <option value="<? echo $date['date_training']; ?>"><? echo date("d.m.Y", strtotime($date['date_training'])); ?></option>
+                    <? } ?>
+                </select>
+            </div>
+            <div class="field">
+                <select class="ui fluid dropdown" name="UserID" required>
+                    <option value="">Студент</option>
+                    <? foreach ($studentsTable as $studentData) { ?>
+                        <option value="<? echo $studentData['id']; ?>"><? echo $studentData['user_surname']." ".mb_substr($studentData['user_name'],0,1,'UTF-8').". (".$studentData['user_group'].")"; ?></option>
+                    <? } ?>
+                </select>
+
+            </div>
+        </div>
+    </div>
+    <div class="actions">
+        <a class="ui red button" onclick="hideModal()">Отменить</a>
+        <button type="submit" class="ui green button">Записать</button>
+    </div>
+</form>
 
 </body>
 
@@ -201,8 +235,12 @@ function array_sum_rows($arr) {
     function hideModal() {
         $('.long.modal').modal('hide');
     }
-    function showModal() {
-        $('.long.modal').modal('setting', 'closable', false).modal('show');
+    function showModalSendAdjustmentStudents() {
+        $('#sendAdjustmentStudents').modal('setting', 'closable', false).modal('show');
+    }
+
+    function showModalSendVisitedStudents() {
+        $('#sendVisitedStudents').modal('setting', 'closable', false).modal('show');
     }
 
     $(document).ready(function () {
@@ -211,6 +249,17 @@ function array_sum_rows($arr) {
             $.ajax({
                 type: 'POST',
                 url: "/professor/sendVisitedUsers.php",
+                data: $(this).serialize()
+            }).done(function () {
+                location.reload();
+            });
+            return false;
+        });
+
+        $("#sendAdjustmentStudents").submit(function () {
+            $.ajax({
+                type: 'POST',
+                url: "/professor/sendAdjustmentUsers.php",
                 data: $(this).serialize()
             }).done(function () {
                 location.reload();
