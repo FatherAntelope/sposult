@@ -5,7 +5,8 @@ $settings = array(
     'normalDistance' => 1200, 'niceDistance' => 2000,
     'pulsePeaceMin' => 60, 'pulsePeaceMax' => 90,
     'pulseWarmupMin' => 90, 'pulseWarmupMax' => 120,
-    'pulseTrainingMin' => 120, 'pulseTrainingMax' => 160
+    'pulseTrainingMin' => 120, 'pulseTrainingMax' => 160,
+    'normalIndexWeight' => 20
 );
 ?>
 
@@ -31,12 +32,12 @@ $settings = array(
 
     $dataUser = json_decode($_COOKIE['userData'], true);
 
+    $indexWeight = $dataUser['user_weight']/(($dataUser['user_height'] / 100) * 2);
+
 
     $allDataStudent = R::findAll('visits', 'student_id = :student_id ORDER BY date_training DESC', array(
         ':student_id' => $dataUser['id']
     ));
-
-
 
 
     $allDatesVisited = array();
@@ -126,16 +127,127 @@ $settings = array(
                 <i class="home icon"></i>
                 На главную
             </a>
-            <? if($countAllDatesVisitedStudent !=0 ) { ?>
-            <button class="ui floated small blue labeled icon button" onclick="openModalSeeStatisticVisits()" style="margin-top: 5px">
-                <i class="bar chart icon"></i>
-                Статистика посещений
-            </button>
-            <? } ?>
+
         </div>
-        <div class="ui header center aligned">
-            <div class="ui big label blue"><? echo $dataUser['user_name'].' '.$dataUser['user_surname'].' ('.$dataUser['user_group'].')'; ?> </div>
+
+        <div class="ui card fluid">
+            <div class="content">
+                <div class="header center aligned" style="color: #f2711c"><h2><? echo $dataUser['user_name'].' '.$dataUser['user_surname']; ?></h2></div>
+                <div class="meta center aligned"><? echo $dataUser['user_group']; ?></div>
+                <div class="description">
+                    <h3 class="ui horizontal divider header"><i class="address card blue icon"></i>Параметры тела</h3>
+                    <div class="ui list">
+                        <div class="item">
+                            <i class="child blue icon"></i>
+                            <div class="content">
+                                <div class="header">Фактический рост</div>
+                                <div class="description"><? echo $dataUser['user_height'];?></div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <i class="weight blue icon"></i>
+                            <div class="content">
+                                <div class="header">Фактический вес</div>
+                                <div class="description"><? echo $dataUser['user_weight'];?></div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <i class="weight blue icon"></i>
+                            <div class="content">
+                                <div class="header">Рекомендованная масса тела</div>
+                                <div class="description"><? echo $settings['normalIndexWeight'] * ($dataUser['user_height'] / 100 * 2);?></div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <i class="weight blue icon"></i>
+                            <div class="content">
+                                <div class="header">Индекс массы тела</div>
+                                <div class="description">
+                                    <?
+
+                                    if ($indexWeight < 15) {
+                                        echo "Острый недостаток веса";
+                                    }
+                                    elseif ($indexWeight >= 15 && $indexWeight < 20) {
+                                        echo "Недостаточная масса тела";
+                                    }
+                                    elseif ($indexWeight >= 20 && $indexWeight < 25) {
+                                        echo "Нормальный вес";
+                                    }
+                                    elseif ($indexWeight >= 25 && $indexWeight < 30) {
+                                        echo "Избыточная масса тела";
+                                    }
+                                    elseif ($indexWeight >= 30 && $indexWeight < 35) {
+                                        echo "Ожирение 1 степени";
+                                    }
+                                    elseif ($indexWeight >= 35 && $indexWeight <= 40) {
+                                        echo "Ожирение 2 степени";
+                                    }
+                                    elseif ($indexWeight > 40) {
+                                        echo "Ожирение 3 степени";
+                                    }
+
+                                    ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <? if($countAllDatesVisitedStudent !=0 ) { ?>
+                        <h3 class="ui horizontal divider header"><i class="bar chart blue icon"></i>Прогресс</h3>
+                        <div class="ui progress indicating" data-value="<? echo ($countAllDatesVisitedStudent * 100)/$countAllDatesTrainings; ?>">
+                            <div class="bar">
+                                <div class="progress"></div>
+                            </div>
+                            <div class="label">Прогресс посещений</div>
+                        </div>
+                        <div class="ui progress indicating" data-value="<? echo ($countAllDatesCheck * 100)/$countAllDatesTrainings; ?>">
+                            <div class="bar">
+                                <div class="progress"></div>
+                            </div>
+                            <div class="label">Прогресс подтвержденных заполнений</div>
+                        </div>
+                        <br>
+                        <h3 class="ui horizontal divider header"><i class="calendar check blue icon"></i>Даты занятий</h3>
+                        <div class="field" style="margin-bottom: 20px">
+                            <h4 class="ui dividing header">Все даты</h4>
+                            <?
+                            foreach ($allDatesTrainings as $data) {
+                                echo "<div class=\"ui orange label\">". date("d.m.Y", strtotime($data['date_training'])) ."</div>";
+                            }
+                            ?>
+                        </div>
+                        <div class="field" style="margin-bottom: 20px">
+                            <h4 class="ui dividing header">Посещенные даты</h4>
+                            <?
+                            foreach ($allDatesVisited as $date) {
+                                echo "<div class=\"ui green label\">". date("d.m.Y", strtotime($date)) ."</div>";
+                            }
+                            ?>
+                        </div>
+                        <div class="field" style="margin-bottom: 20px">
+                            <h4 class="ui dividing header">Заполненные даты с проверкой</h4>
+                            <?
+                            if($allDatesCheck != null) {
+                                foreach ($allDatesCheck as $date) {
+                                    echo "<div class=\"ui brown label\">" . date("d.m.Y", strtotime($date)) . "</div>";
+                                }
+                            } else {
+                                echo "<div class=\"ui brown label\">Отсутствуют</div>";
+                            }
+                            ?>
+                        </div>
+                    <? } ?>
+                </div>
+                <div class="extra content">
+                    <button class="ui right floated small orange labeled icon button" onclick="openModalAddEditParam()">
+                        <i class="edit icon"></i>
+                        Отредактировать
+                    </button>
+                </div>
+            </div>
         </div>
+
+
         <? if ($countAllDatesVisitedStudent == 0) {?>
             <div class="ui negative message">
                 <i class="close icon"></i>
@@ -348,54 +460,35 @@ $settings = array(
             </div>
             <br>
             <input type="hidden" name="UserID" value="<? echo $dataUser['id']; ?>">
-            <button type="submit" class="fluid ui blue basic button">Отправить данные</button>
+            <button type="submit" class="fluid ui blue basic button">Отправить</button>
         </form>
     </div>
 </div>
 
-<div class="ui modal" id="seeStatisticVisits">
-    <div class="header" style="color: #f2711c">Статистика посещений</div>
+<div class="ui modal mini" id="addEditParam">
+    <div class="header" style="color: #f2711c">Редактирование параметров</div>
     <div class="content">
-        <h3 class="ui horizontal divider header"><i class="bar chart blue icon"></i>Прогресс</h3>
-        <div class="ui progress indicating" data-value="<? echo ($countAllDatesVisitedStudent * 100)/$countAllDatesTrainings; ?>">
-            <div class="bar">
-                <div class="progress"></div>
+        <form class="ui form" id="sendEditDataParam">
+            <div class="fields">
+                <div class="eight wide field">
+                    <label>Текущий рост</label>
+                    <div class="ui left icon input">
+                        <input type="number" name="UserHeight" value="<? echo $dataUser['user_height']; ?>" min="0" max="999" required>
+                        <i class="child blue icon"></i>
+                    </div>
+                </div>
+                <div class="eight wide field">
+                    <label>Текущий вес</label>
+                    <div class="ui left icon input">
+                        <input type="number" name="UserWeight" value="<? echo $dataUser['user_weight']; ?>" min="0" max="999" required>
+                        <i class="weight blue icon"></i>
+                    </div>
+                </div>
             </div>
-            <div class="label">Прогресс посещений</div>
-        </div>
-        <div class="ui progress indicating" data-value="<? echo ($countAllDatesCheck * 100)/$countAllDatesTrainings; ?>">
-            <div class="bar">
-                <div class="progress"></div>
-            </div>
-            <div class="label">Прогресс подтвержденных заполнений</div>
-        </div>
-        <br>
-        <h3 class="ui horizontal divider header"><i class="calendar check blue icon"></i>Даты занятий</h3>
-        <div class="field" style="margin-bottom: 20px">
-            <h4 class="ui dividing header">Все даты</h4>
-            <?
-            foreach ($allDatesTrainings as $data) {
-                echo "<div class=\"ui orange label\">". date("d.m.Y", strtotime($data['date_training'])) ."</div>";
-            }
-            ?>
-        </div>
-        <div class="field" style="margin-bottom: 20px">
-            <h4 class="ui dividing header">Посещенные даты</h4>
-            <?
-            foreach ($allDatesVisited as $date) {
-                echo "<div class=\"ui green label\">". date("d.m.Y", strtotime($date)) ."</div>";
-            }
-            ?>
-        </div>
-        <div class="field" style="margin-bottom: 20px">
-            <h4 class="ui dividing header">Заполненные даты с проверкой</h4>
-            <?
-            foreach ($allDatesCheck as $date) {
-                echo "<div class=\"ui brown label\">". date("d.m.Y", strtotime($date)) ."</div>";
-            }
-            ?>
-        </div>
-
+            <br>
+            <input type="hidden" name="UserID" value="<? echo $dataUser['id']; ?>">
+            <button type="submit" class="fluid ui blue basic button">Отправить</button>
+        </form>
     </div>
 </div>
 
@@ -497,13 +590,14 @@ $settings = array(
 
     $('.ui.progress').progress();
 
+    function openModalAddEditParam() {
+        $('#addEditParam').modal('show');
+    }
+
     function openModalAddDataVisits() {
         $('#addDataVisits').modal('show');
     }
 
-    function openModalSeeStatisticVisits() {
-        $('#seeStatisticVisits').modal('show');
-    }
 
 
     $(document).ready(function () {
@@ -511,6 +605,17 @@ $settings = array(
             $.ajax({
                 type: 'POST',
                 url: "/student/sendData.php",
+                data: $(this).serialize()
+            }).done(function() {
+                location.reload();
+            });
+            return false;
+        });
+
+        $("#sendEditDataParam").submit(function () {
+            $.ajax({
+                type: 'POST',
+                url: "/student/sendEditParam.php",
                 data: $(this).serialize()
             }).done(function() {
                 location.reload();
