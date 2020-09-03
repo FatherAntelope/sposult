@@ -205,9 +205,7 @@
 </body>
 <script>
     function callDeleteCookies() {
-        delete_cookie("userData");
-        delete_cookie("userRole");
-        $(location).attr('href', '/');
+        delCookie();
     }
 
     function delete_cookie (cookie_name) {
@@ -220,6 +218,16 @@
         ));
         return matches ? decodeURIComponent(matches[1]) : undefined;
     }
+	
+	function delCookie() {
+            $.ajax({
+                type: 'POST',
+                url: "/delCookie.php",
+                data: $(this).serialize()
+            }).done(function() {
+                location.reload();
+            });
+	}
 </script>
 
 <script>
